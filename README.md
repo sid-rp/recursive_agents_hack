@@ -42,6 +42,34 @@ Routing from benchmarks alone (before any measured outcomes; `python -m groundho
 Nemotron-3-Ultra has the best scores in the file but isn't served on our Crusoe account, so it's excluded
 automatically. Measured outcomes then move picks (e.g. the scout moved after Nano went 3/7 in the first run).
 
+## Aetheris for Azure (computer-use world, same harness and self-improvement loop)
+
+Text-guided, multimodal computer use of the real Azure portal, built from [aetheris](https://github.com/savir2010/aetheris)
+(voice removed; its screenshot -> "what to click" -> highlight idea became real actions) on the unchanged Groundhog
+harness (Deep Agents lead/scout/analyst/verifier, benchmark router, shared brain, guards) and meta-harness (evolve loop).
+
+```bash
+GROUNDHOG_WORLD=azure .venv/bin/python -m groundhog.app          # http://localhost:7860, browser opens via WSLg
+#   "Open Azure portal" -> sign in yourself (choose "Stay signed in"); then type tasks
+GROUNDHOG_WORLD=azure .venv/bin/python -m groundhog.evolve evolve --limit 4   # unattended self-improvement on Azure tasks
+```
+
+- **Multimodal**: every screen role sees the latest screenshot with numbered marks (Set-of-Marks, as in WebVoyager /
+  browser-use) plus the element list, and acts by number (`click(7)`, `type_text(9, ...)`), never by guessed pixels
+  (all tested VLMs mislocated a plain red square). Across iframes. Lead (text-only) gets the URL + element list.
+- **Nemotron only** (frozen for this world): screen roles route to Nemotron-3.5-Super-VL (WebVoyager 77.7, OSWorld-
+  Verified 51.1) / Nano-Omni by benchmarks; the verifier is always a different model than the analyst.
+- **Ask & steer**: `ask_human` for every agent; a guard about to trip (steps/time/repeats) asks you instead of giving
+  up; anything you type while it runs is injected as `[HUMAN STEERING]` before the next model call.
+- **Safety (frozen tools)**: destructive/submitting clicks (delete, stop, purchase, create on forms, save, assign...)
+  need your explicit "yes" (denied when unattended); never types into password fields; Azure/Microsoft URLs only.
+- **Recursive learning**: after each task you say whether it worked -> recorded as a validation (worked/failed); the
+  reflector turns the trace, including your guidance, into Azure lessons in `runs_azure/brain.db` that later tasks
+  read. `evolve` runs 16 read-only navigation tasks (8 train / 4 val / 4 test, graded on final URL or blade title)
+  and 2 security tasks, with the same improver, gate and leak filter; harness files are `harness_azure/vN/`.
+- GPUCo world unchanged (`GROUNDHOG_WORLD=gpuco`, default); backup of the pre-Azure app: git branch `backup-gpuco`,
+  copy in `/root/backups/groundhog_gpuco_backup`.
+
 ## Where the prompts live (what the improver can change)
 
 | layer | file | editable |
