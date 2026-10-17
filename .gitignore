@@ -5,3 +5,5 @@ runs/
 eval/
 data/*.db
 runs_prev*/
+runs_azure/
+eval_azure/

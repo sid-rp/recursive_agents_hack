@@ -1,0 +1,3 @@
+# EDITABLE: Deep Agents' own harness (HarnessProfile). Stock text: harness_azure/DEEPAGENTS_DEFAULTS.md.
+# Filesystem tools are useless for portal work (only read_file is kept, to read skills).
+excluded_tools: [ls, glob, grep, write_file, edit_file, delete]

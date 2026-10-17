@@ -1,0 +1,24 @@
+# EDITABLE by the improver. Benchmark weights per job (scores frozen in frozen/benchmarks.yaml).
+# The Azure world allows Nemotron models only (frozen); vision_roles only get image-capable models.
+jobs:
+  planning:          {tau_bench: 0.4, terminal_bench: 0.3, ifbench: 0.3}       # lead (text): plan + definition of done
+  tool_exploration:  {webvoyager: 0.5, osworld: 0.3, tau_bench: 0.2}          # scout (vision): explore the portal
+  reflection:        {long_context: 0.5, ifbench: 0.5}                         # reflector: read traces, write lessons
+  harness_editing:   {swe_bench: 0.5, terminal_bench: 0.3, long_context: 0.2}  # improver: patch harness files
+task_jobs:
+  web_navigation:    {about: "find and open pages, menus and blades in the portal",
+                      weights: {webvoyager: 0.5, osworld: 0.3, tau_bench: 0.2}}
+  screen_reading:    {about: "read values, names, counts or messages from the screen",
+                      weights: {ocrbench: 0.6, webvoyager: 0.2, ifbench: 0.2}}
+  form_filling:      {about: "fill in forms and settings step by step",
+                      weights: {osworld: 0.4, webvoyager: 0.3, ifbench: 0.3}}
+default_task_job: web_navigation
+roles: {lead: planning, scout: tool_exploration, analyst: task, verifier: task,
+        reflector: reflection, improver: harness_editing}
+vision_roles: [scout, analyst, verifier]
+cost_weight: {default: 0.1, reflection: 0.4, harness_editing: 0.05}
+prior_strength: 4
+verifier_other_family: true   # all-Nemotron: the verifier is then a different model than the analyst
+escalation: {after_tool_errors: 2, after_repeated_calls: 2}
+pins: {}
+exclude: []
