@@ -180,12 +180,16 @@ class GroundhogMiddleware(AgentMiddleware):
         self.steps, self.errors, self.repeats, self.seen, self.asks = 0, 0, 0, {}, 0
         if self.role == "verifier" and self.team.h["routing"].get("verifier_other_family"):
             # verify against the analysts that actually ran in this task, whichever job the lead delegated to
-            fams = {Router.family(m) for m in self.st.get("analyst_models", ())}
-            if len(fams) == 1 and Router.family(self.model_id) in fams:
-                self.avoid = fams.pop()
-                new = self.team.router.pick(self.role, self.job, avoid_family=self.avoid)
-                self._ev(kind="reroute", text=f"{self.model_id} -> {new}: same family as this task's analyst")
-                self.model_id = new
+            used = set(self.st.get("analyst_models", ()))
+            fams = {Router.family(m) for m in used}
+            fam = fams.pop() if len(fams) == 1 else None
+            if self.model_id in used or (fam and Router.family(self.model_id) == fam):
+                new = self.team.router.pick(self.role, self.job, avoid_family=fam,
+                                            avoid_model=next(iter(used)) if len(used) == 1 else None)
+                if new != self.model_id:  # pick() keeps the family rule only when another family exists
+                    self.avoid = fam
+                    self._ev(kind="reroute", text=f"{self.model_id} -> {new}: same model/family as this task's analyst")
+                    self.model_id = new
         return None
 
     def wrap_model_call(self, request, handler):

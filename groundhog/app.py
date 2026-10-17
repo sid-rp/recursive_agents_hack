@@ -36,7 +36,9 @@ def run_task(text: str) -> None:
         h = load_harness(HARNESS / f"v{v}")
         task = dict(id=f"live-{int(time.time())}", template="live", question=text)
         human.emit({"role": "system", "kind": "task", "text": f"Task started on harness v{v}: {text}"})
+        used = brain.ids_in_render()
         res = Team(h, brain.render(), llm, trace_dir=RUNS / "traces" / "live", human=human).run(task)
+        res["brain_used"] = used
         verdict = human.ask(f"I finished with answer {res['answer']!r} (now at {res['final'].get('url')}). "
                             "Did I do it correctly? Reply yes, or no + what was wrong.") or ""
         res["passed"] = verdict.strip().lower().startswith("y")

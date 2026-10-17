@@ -136,7 +136,8 @@ class Brain:
         """Curator: the only writer. Callers feed it one task's ops at a time from a queue (evolve.learn); the lock and
         SQLite's write lock also serialise it across threads/processes."""
         events = []
-        if answer and not self.naive:  # lessons must be reusable knowledge, never this task's answer value
+        # lessons must be reusable knowledge, never this task's answer value (one-word answers like "done" are not values)
+        if answer and not self.naive and (any(c.isdigit() for c in str(answer)) or len(str(answer).strip()) > 6):
             leak = re.compile(rf"(?<![\w.]){re.escape(str(answer).strip())}(?![\w.])")
             kept = [o for o in ops.get("ops", []) if not leak.search(str(o.get("text", "")))]
             events += [f"LEAK-DROP: {str(o.get('text'))[:60]}" for o in ops.get("ops", []) if o not in kept]
